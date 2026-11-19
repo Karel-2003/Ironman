@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRONMAN 70.3 SUB-4 TRENÉR (2026–2030)</title>
+  <style>
+    :root {
+      --bg-app: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-alt: #0b1120;
+      --bg-input: #0f172a;
+      --border: #334155;
+      --border-light: #475569;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-soft: #cbd5e1;
+      --accent-cyan: #06b6d4;
+      --accent-cyan-bg: rgba(6, 182, 212, 0.14);
+      --accent-green: #10b981;
+      --accent-green-bg: rgba(16, 185, 129, 0.15);
+      --accent-amber: #f59e0b;
+      --accent-amber-bg: rgba(245, 158, 11, 0.15);
+      --accent-red: #ef4444;
+      --accent-red-bg: rgba(239, 68, 68, 0.15);
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-card-alt); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+    /* Toast Notification */
+    #toast-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-item {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid var(--accent-cyan);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .toast-item.success { border-color: var(--accent-green); color: #a7f3d0; }
+    .toast-item.error { border-color: var(--accent-red); color: #fecaca; }
+
+    /* Header & Dashboard */
+    .topbar {
+      background: rgba(15, 23, 42, 0.96);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    .topbar-inner {
+      padding: 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .brand-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #06b6d4, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #0f172a;
+      font-weight: 900;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+    }
+    .brand-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .storage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      background: var(--bg-card);
+      color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+    .storage-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+
+    /* Backup Buttons */
+    .backup-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-main);
+      transition: all 0.15s ease;
+      text-decoration: none;
+      user-select: none;
+    }
+    .btn:hover {
+      background: #283548;
+      border-color: var(--border-light);
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-cyan {
+      background: var(--accent-cyan);
+      color: #0f172a;
+      border-color: var(--accent-cyan);
+    }
+    .btn-cyan:hover {
+      background: #22d3ee;
+      border-color: #22d3ee;
+    }
+    .btn-green {
+      background: var(--accent-green-bg);
+      color: #6ee7b7;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .btn-green:hover {
+      background: rgba(16, 185, 129, 0.25);
+    }
+
+    /* KPI Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .kpi-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .kpi-val-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .kpi-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .kpi-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--accent-cyan-bg);
+      color: var(--accent-cyan);
+    }
+
+    /* Main Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: var(--bg-card);
+      color: var(--text-soft);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: #283548;
+      color: #ffffff;
+    }
+    .tab-btn.active {
+      background: var(--accent-cyan);
+      color: #0f172a;
+      border-color: var(--accent-cyan);
+    }
+
+    /* Main Workspace */
+    .main-area {
+      padding: 20px 0 48px 0;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Panel Cards & Controls */
+    .panel-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .controls-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-pill {
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-soft);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-pill:hover {
+      border-color: var(--accent-cyan);
+      color: #ffffff;
+    }
+    .filter-pill.active {
+      background: var(--accent-cyan);
+      color: #0f172a;
+      border-color: var(--accent-cyan);
+    }
+
+    .week-nav-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    @media (max-width: 640px) {
+      .week-nav-row { grid-template-columns: 1fr; }
+    }
+    select.week-dropdown {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+    }
+    select.week-dropdown:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Week Banner */
+    .week-banner {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--accent-cyan);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .banner-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .badge {
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-cyan { background: var(--accent-cyan); color: #0f172a; }
+    .badge-slate { background: #334155; color: #f8fafc; }
+    .badge-amber { background: var(--accent-amber-bg); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-green { background: var(--accent-green-bg); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-red { background: var(--accent-red-bg); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    .banner-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .banner-desc {
+      font-size: 13px;
+      color: var(--text-soft);
+      max-width: 780px;
+    }
+    .banner-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .metric-box {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+      text-align: center;
+    }
+    .metric-box span {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .metric-box strong {
+      font-size: 14px;
+      color: var(--accent-cyan);
+      font-weight: 800;
+    }
+
+    /* 7 Days Grid */
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 1200px) {
+      .days-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .days-grid { grid-template-columns: 1fr; }
+    }
+    .day-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .day-card.status-completed {
+      border-color: var(--accent-green);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.09) 0%, var(--bg-card) 100%);
+    }
+    .day-card.status-missed {
+      border-color: var(--accent-red);
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.09) 0%, var(--bg-card) 100%);
+    }
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .day-date {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+    .day-date strong {
+      color: #ffffff;
+      text-transform: uppercase;
+      margin-right: 4px;
+    }
+    .disc-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+    }
+    .disc-swim { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .disc-bike { background: rgba(245, 158, 11, 0.18); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .disc-run { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .disc-brick { background: rgba(6, 182, 212, 0.18); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+    .disc-strength { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .disc-rest { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    .day-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+    .day-metric {
+      display: inline-block;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      color: var(--accent-cyan);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .day-details {
+      font-size: 12.5px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+    }
+
+    .day-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .status-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .st-btn {
+      padding: 7px 4px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--bg-card-alt);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .st-btn:hover {
+      color: #ffffff;
+      border-color: var(--border-light);
+    }
+    .st-btn.active-planned {
+      background: #334155;
+      color: #ffffff;
+      border-color: #475569;
+    }
+    .st-btn.active-completed {
+      background: var(--accent-green);
+      color: #064e3b;
+      border-color: var(--accent-green);
+      font-weight: 800;
+    }
+    .st-btn.active-missed {
+      background: var(--accent-red);
+      color: #ffffff;
+      border-color: var(--accent-red);
+      font-weight: 800;
+    }
+
+    .note-row {
+      display: flex;
+      gap: 6px;
+    }
+    .note-input {
+      flex: 1;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 9px;
+      color: #ffffff;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+    }
+    .note-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Exercises Library */
+    .exercises-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .exercises-grid { grid-template-columns: 1fr; }
+    }
+    .ex-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .ex-top-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .ex-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    .svg-stage {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ex-info p {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+    .ex-info strong {
+      color: #ffffff;
+    }
+    .ex-media-box {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .media-preview {
+      width: 100%;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000000;
+      border: 1px solid var(--border);
+    }
+    .media-preview iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      display: block;
+    }
+    .media-preview video, .media-preview img {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .media-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .yt-input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Calculator & Strategy Tables */
+    .calc-inputs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 900px) {
+      .calc-inputs { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .calc-inputs { grid-template-columns: 1fr; }
+    }
+    .input-card {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+    .input-card label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 6px;
+    }
+    .input-card input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 800;
+      outline: none;
+    }
+    .input-card input:focus {
+      border-color: var(--accent-cyan);
+    }
+    .input-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .sim-banner {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .sim-splits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+    .sim-splits span {
+      background: var(--bg-card);
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .sim-total {
+      text-align: right;
+    }
+    .sim-total .big-time {
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .zones-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .zones-two-col { grid-template-columns: 1fr; }
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-card-alt);
+    }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #0b1120;
+      color: var(--text-muted);
+      font-weight: 800;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+      color: var(--text-soft);
+    }
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+    table.data-table tr.highlight-row {
+      background: rgba(6, 182, 212, 0.1);
+    }
+    table.data-table tr.highlight-row td {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    @media (max-width: 850px) {
+      .nutrition-grid { grid-template-columns: 1fr; }
+    }
+    .nutri-card {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+    .nutri-card h4 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-amber);
+      margin-bottom: 6px;
+    }
+    .nutri-card p {
+      font-size: 12.5px;
+      color: var(--text-soft);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-box"></div>
+
+  <!-- Top Header & Dashboard -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand-row">
+        <div class="brand-left">
+          <div class="brand-logo" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-kicker">
+              <span>23. 11. 2026 – 1. 9. 2030</span>
+              <span class="storage-pill" id="storage-status"><span class="storage-dot"></span>Uloženo lokálně</span>
+            </div>
+            <h1 class="brand-title">IRONMAN 70.3 SUB-4 TRENÉR (2026–2030)</h1>
+          </div>
+        </div>
+
+        <!-- Backup Export / Import -->
+        <div class="backup-actions">
+          <button type="button" class="btn" id="btn-export-json">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Stáhnout zálohu (.json)
+          </button>
+          <label class="btn" for="input-import-json">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Nahrát zálohu (.json)
+          </label>
+          <input type="file" id="input-import-json" accept=".json,application/json" style="display:none;" />
+        </div>
+      </div>
+
+      <!-- KPI Dashboard -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-label">Odpočet do závodu (25. 8. 2030)</span>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpi-countdown">— dnů</span>
+            <span class="kpi-badge">Cíl &lt;4:00:00</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Odškrtnuté tréninky</span>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpi-completed">0 dnů</span>
+            <span class="kpi-badge" id="kpi-hours" style="background:var(--accent-green-bg);color:#6ee7b7;">0,0 h</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Celková splněnost plánu</span>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpi-rate">0 %</span>
+            <span class="kpi-badge" id="kpi-week-done">Týden: 0/7</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Aktuální FTP (kolo)</span>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpi-ftp">295 W</span>
+            <span class="kpi-badge" id="kpi-wpkg" style="background:var(--accent-amber-bg);color:#fcd34d;">3,47 W/kg</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Aktuální hmotnost</span>
+          <div class="kpi-val-row">
+            <span class="kpi-val" id="kpi-weight">85,0 kg</span>
+            <span class="kpi-badge">Cíl: 80 kg</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="tabs-bar" role="tablist">
+        <button type="button" class="tab-btn active" data-tab="calendar">Týdenní kalendář (197 týdnů)</button>
+        <button type="button" class="tab-btn" data-tab="exercises">Knihovna cviků a videí</button>
+        <button type="button" class="tab-btn" data-tab="zones">Kalkulačka zón (W / tempo)</button>
+        <button type="button" class="tab-btn" data-tab="strategy">4letá strategie (2026–2030)</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="container main-area">
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: WEEKLY CALENDAR (197 WEEKS)                                  -->
+    <!-- =================================================================== -->
+    <section id="panel-calendar" class="tab-panel active">
+      <div class="panel-box">
+        <div class="controls-top">
+          <div class="pill-group" id="year-filters">
+            <button type="button" class="filter-pill active" data-year="all">Vše (197 týdnů)</button>
+            <button type="button" class="filter-pill" data-year="1">Rok 1 (2026/27)</button>
+            <button type="button" class="filter-pill" data-year="2">Rok 2 (2027/28)</button>
+            <button type="button" class="filter-pill" data-year="3">Rok 3 (2028/29)</button>
+            <button type="button" class="filter-pill" data-year="4">Rok 4 (2029/30)</button>
+          </div>
+
+          <div class="pill-group">
+            <button type="button" class="btn" id="btn-jump-t1">Týden 1 (23. 11. 2026)</button>
+            <button type="button" class="btn btn-cyan" id="btn-jump-today">Dnešní týden</button>
+            <button type="button" class="btn" id="btn-jump-race" style="border-color:rgba(239,68,68,0.5);color:#fca5a5;">Závod Sub-4 (T196)</button>
+          </div>
+        </div>
+
+        <div class="week-nav-row">
+          <button type="button" class="btn" id="btn-prev-week">← Předchozí týden</button>
+          <select id="select-week" class="week-dropdown" aria-label="Výběr týdne"></select>
+          <button type="button" class="btn" id="btn-next-week">Další týden →</button>
+        </div>
+      </div>
+
+      <!-- Selected Week Banner -->
+      <div class="week-banner">
+        <div>
+          <div class="banner-badges">
+            <span class="badge badge-cyan" id="wb-num">TÝDEN 1 / 197</span>
+            <span class="badge badge-slate" id="wb-year">Rok 1 (2026/27)</span>
+            <span class="badge badge-amber" id="wb-phase">Základní báze</span>
+          </div>
+          <h2 class="banner-title" id="wb-title">23. 11. – 29. 11. 2026</h2>
+          <p class="banner-desc" id="wb-desc">Popis zaměření týdne.</p>
+        </div>
+
+        <div class="banner-metrics">
+          <div class="metric-box">
+            <span>Objem týdne</span>
+            <strong id="wb-hours">8,0 h</strong>
+          </div>
+          <div class="metric-box">
+            <span>Cílové FTP / Tempa</span>
+            <strong id="wb-targets">FTP 295 W • 1:48/100m • 4:30/km</strong>
+          </div>
+          <button type="button" class="btn btn-green" id="btn-check-all-week">✓ Splnit celý týden</button>
+        </div>
+      </div>
+
+      <!-- 7 Day Cards -->
+      <div class="days-grid" id="days-grid"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: EXERCISE LIBRARY, SVG DIAGRAMS & VIDEOS                      -->
+    <!-- =================================================================== -->
+    <section id="panel-exercises" class="tab-panel">
+      <div class="panel-box">
+        <h2 style="font-size:18px;font-weight:800;margin-bottom:6px;">Knihovna cviků, ilustrací a videí (15 klíčových prvků)</h2>
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:14px;">
+          Kompletní přehled silových, plyometrických, kompenzačních a plaveckých cvičení pro zvýšení wattového výkonu na kole, zlepšení ekonomiky běhu a udržení svalové hmoty celého těla. Ke každému cviku můžeš přidat vlastní YouTube odkaz nebo nahrát video/fotku ze zařízení.
+        </p>
+        <div class="pill-group" id="ex-cat-filters">
+          <button type="button" class="filter-pill active" data-cat="all">Vše (15)</button>
+          <button type="button" class="filter-pill" data-cat="watts">Watty na kole (4)</button>
+          <button type="button" class="filter-pill" data-cat="run">Běžecká ekonomika (5)</button>
+          <button type="button" class="filter-pill" data-cat="upper">Horní polovina těla (3)</button>
+          <button type="button" class="filter-pill" data-cat="swim">Plavání a mobilita (3)</button>
+        </div>
+      </div>
+
+      <div class="exercises-grid" id="exercises-grid"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: POWER / PACE ZONES CALCULATOR & 70.3 SIMULATOR               -->
+    <!-- =================================================================== -->
+    <section id="panel-zones" class="tab-panel">
+      <div class="panel-box">
+        <div class="controls-top" style="margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:18px;font-weight:800;">Kalkulačka tréninkových zón a simulátor závodu 70.3</h2>
+            <p style="font-size:13px;color:var(--text-soft);">Zadej své aktuální parametry – zóny i cílový čas půlironmanu se okamžitě přepočítají.</p>
+          </div>
+          <div class="pill-group">
+            <button type="button" class="filter-pill zone-preset" data-ftp="295" data-wt="85" data-css="1:50" data-run="4:25">Start 2026 (295 W)</button>
+            <button type="button" class="filter-pill zone-preset" data-ftp="320" data-wt="82" data-css="1:34" data-run="3:58">Rok 2 (320 W)</button>
+            <button type="button" class="filter-pill zone-preset" data-ftp="340" data-wt="81" data-css="1:27" data-run="3:42">Rok 3 (340 W)</button>
+            <button type="button" class="filter-pill zone-preset" data-ftp="355" data-wt="80" data-css="1:22" data-run="3:28">Cíl Sub-4 (355 W)</button>
+          </div>
+        </div>
+
+        <div class="calc-inputs">
+          <div class="input-card">
+            <label for="in-ftp">Cyklistické FTP (W)</label>
+            <input type="number" id="in-ftp" min="120" max="550" value="295" />
+            <div class="input-sub" id="out-wpkg">Poměr výkon/váha: 3,47 W/kg</div>
+          </div>
+          <div class="input-card">
+            <label for="in-weight">Hmotnost (kg)</label>
+            <input type="number" id="in-weight" min="50" max="130" step="0.5" value="85" />
+            <div class="input-sub">Závodní optimum: 79–81 kg</div>
+          </div>
+          <div class="input-card">
+            <label for="in-css">Plavání CSS (min:sek / 100 m)</label>
+            <input type="text" id="in-css" value="1:50" placeholder="1:50" />
+            <div class="input-sub">Sub-4 standard: 1:22–1:24 / 100 m</div>
+          </div>
+          <div class="input-card">
+            <label for="in-run">Prahový běh (min:sek / km)</label>
+            <input type="text" id="in-run" value="4:25" placeholder="4:25" />
+            <div class="input-sub">Sub-4 standard: 3:28–3:32 / km</div>
+          </div>
+        </div>
+
+        <!-- 70.3 Race Time Simulator -->
+        <div class="sim-banner">
+          <div>
+            <div style="font-size:12px;font-weight:800;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:6px;">
+              Simulátor cílového času Ironman 70.3 (při aero TT posedu)
+            </div>
+            <div class="sim-splits" id="sim-splits"></div>
+          </div>
+          <div class="sim-total">
+            <div style="font-size:11px;color:var(--text-muted);font-weight:700;">ODHADOVANÝ CÍLOVÝ ČAS</div>
+            <div class="big-time" id="sim-total-time">4:56:10</div>
+            <div id="sim-sub4-diff" style="font-size:12px;font-weight:700;color:var(--accent-amber);">+56:10 nad hranicí 4:00:00</div>
+          </div>
+        </div>
+
+        <div class="zones-two-col">
+          <div>
+            <h3 style="font-size:14px;font-weight:800;color:#fcd34d;margin-bottom:8px;">Cyklistické wattové zóny (Z1–Z7)</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Zóna</th>
+                    <th>% FTP</th>
+                    <th>Výkon (W)</th>
+                    <th>W/kg</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-bike-zones"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <h3 style="font-size:14px;font-weight:800;color:#6ee7b7;margin-bottom:8px;">Běžecká tempa a tepové zóny</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Běžecká zóna</th>
+                      <th>Tempo (/km)</th>
+                      <th>Tep (bpm)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-run-zones"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="font-size:14px;font-weight:800;color:#93c5fd;margin-bottom:8px;">Plavecká pásma podle CSS</h3>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Plavecké pásmo</th>
+                      <th>Tempo (/100 m)</th>
+                      <th>Čas na 1,9 km</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-swim-zones"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: 4-YEAR STRATEGY (2026–2030) & NUTRITION PROTOCOL             -->
+    <!-- =================================================================== -->
+    <section id="panel-strategy" class="tab-panel">
+      <div class="panel-box">
+        <h2 style="font-size:18px;font-weight:800;margin-bottom:6px;">Přehled 4leté progrese (2026–2030)</h2>
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:16px;">
+          Strukturovaný makrocyklus respektující akademický rok (udržovací bloky během zimního a letního zkouškového, hlavní objem a aero ladění na jaře a v létě) s rytmem 3 týdny zátěže : 1 týden regenerace.
+        </p>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Období / Ročník</th>
+                <th>Týdenní objem</th>
+                <th>Váha &amp; FTP</th>
+                <th>Plavání (1,9 km)</th>
+                <th>Cyklistika (90 km)</th>
+                <th>Běh (21,1 km)</th>
+                <th>Sacharidy / h</th>
+                <th>Cílový čas 70.3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Výchozí stav (11/2026)</strong></td>
+                <td>7,0 h</td>
+                <td>86–88 kg • ~285 W</td>
+                <td>2:00 / 100 m (38:00)</td>
+                <td>31,0 km/h (2:54:10)</td>
+                <td>5:00 / km (1:45:30)</td>
+                <td>50–60 g/h</td>
+                <td>~5:23:00</td>
+              </tr>
+              <tr>
+                <td><strong>Rok 1 (2026/2027)</strong><br><span style="font-size:11px;color:var(--text-muted);">Základna, technika kraulu, hrazda</span></td>
+                <td>7,5 – 9,5 h</td>
+                <td>83–85 kg • 315 W</td>
+                <td>1:42 / 100 m (32:20)</td>
+                <td>35,5 km/h (2:32:05)</td>
+                <td>4:35 / km (1:36:40)</td>
+                <td>75–85 g/h</td>
+                <td style="color:var(--accent-cyan);font-weight:800;">4:40 – 4:46</td>
+              </tr>
+              <tr>
+                <td><strong>Rok 2 (2027/2028)</strong><br><span style="font-size:11px;color:var(--text-muted);">Přechod na TT kolo, 4 běhy/týden</span></td>
+                <td>10,0 – 12,0 h</td>
+                <td>81–83 kg • 330 W</td>
+                <td>1:34 / 100 m (29:45)</td>
+                <td>38,5 km/h (2:20:15)</td>
+                <td>4:12 / km (1:28:35)</td>
+                <td>85–90 g/h</td>
+                <td style="color:var(--accent-cyan);font-weight:800;">4:20 – 4:24</td>
+              </tr>
+              <tr>
+                <td><strong>Rok 3 (2028/2029)</strong><br><span style="font-size:11px;color:var(--text-muted);">5 běhů/týden, testování CdA</span></td>
+                <td>12,0 – 14,5 h</td>
+                <td>80–82 kg • 345 W</td>
+                <td>1:28 / 100 m (27:50)</td>
+                <td>40,5 km/h (2:13:20)</td>
+                <td>3:55 / km (1:22:40)</td>
+                <td>90–95 g/h</td>
+                <td style="color:var(--accent-cyan);font-weight:800;">4:07 – 4:10</td>
+              </tr>
+              <tr class="highlight-row">
+                <td><strong>Rok 4 (2029/2030)</strong><br><span style="font-size:11px;color:#67e8f9;">Vrcholný blok &amp; Sub-4:00 závod</span></td>
+                <td>14,0 – 16,5 h</td>
+                <td>79–81 kg • 360 W</td>
+                <td>1:24 / 100 m (26:35)</td>
+                <td>42,1 km/h (2:08:15)</td>
+                <td>3:43 / km (1:18:25)</td>
+                <td>100–110 g/h</td>
+                <td style="color:#6ee7b7;font-weight:900;">3:56:45 (SUB-4!)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="nutrition-grid">
+          <div class="nutri-card">
+            <h4>1. Nutriční protokol na kole (60 → 110 g/h)</h4>
+            <p>Pro výkon pod 4 hodiny spálíš ~3 400 kcal. Už od Roku 1 trénuj žaludek (<em>gut training</em>) při víkendových jízdách: kombinuj maltodextrin a fruktózu v poměru 1 : 0,8 v bidonech + izotonické gely, abys v Roku 4 vstřebal 100–110 g sacharidů/h bez žaludečních potíží.</p>
+          </div>
+          <div class="nutri-card">
+            <h4>2. Polarizace 80 : 20 &amp; Zkouškové bloky</h4>
+            <p>80 % objemu odtrénuj čistě v aerobní zóně Z2 (konverzační tempo, nízký kortizol), 20 % v ostrých prahových a VO₂max intervalech. Během lednového a květnového zkouškového sniž objem o 35 % na krátké 50min jednotky a chraň 8,5 hodiny spánku.</p>
+          </div>
+          <div class="nutri-card">
+            <h4>3. Aerodynamika (CdA) &amp; Běžecká ekonomika</h4>
+            <p>Nad 35 km/h spotřebuje odpor vzduchu přes 85 % výkonu. Investice do TT posedu, aero helmy a rychlých plášťů ušetří 25–35 W zadarmo. Na běhu drž kadenci 178–182 kroků/min a buduj tuhost Achillovy šlachy těžkými výpony a Pogo odrazy.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. SAFE STORAGE WRAPPER (LOCALSTORAGE WITH AUTOMATIC MEMORY FALLBACK)
+      // =========================================================================
+      window._memStore = window._memStore || {};
+      var STORAGE_KEY = 'ironman_703_sub4_state_v1';
+      var usingMemoryFallback = false;
+
+      function safeGetItem(key) {
+        try {
+          return window.localStorage.getItem(key);
+        } catch (e) {
+          usingMemoryFallback = true;
+          return Object.prototype.hasOwnProperty.call(window._memStore, key) ? window._memStore[key] : null;
+        }
+      }
+
+      function safeSetItem(key, value) {
+        try {
+          window.localStorage.setItem(key, value);
+        } catch (e) {
+          usingMemoryFallback = true;
+          window._memStore[key] = value;
+        }
+      }
+
+      // =========================================================================
+      // 2. APPLICATION STATE
+      // =========================================================================
+      var state = {
+        currentWeekIndex: 0,
+        yearFilter: 'all',
+        exCategory: 'all',
+        dayLogs: {},        // { "W1_D0": { status: "planned"|"completed"|"missed", note: "" } }
+        exerciseVideos: {}, // { "hip-thrust": "https://..." }
+        uploadedMedia: {},  // Session-only { "hip-thrust": { url, type, name } }
+        calc: {
+          ftp: 295,
+          weight: 85,
+          css: '1:50',
+          run: '4:25'
+        }
+      };
+
+      function loadState() {
+        var raw = safeGetItem(STORAGE_KEY);
+        if (raw) {
+          try {
+            var parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+              if (typeof parsed.currentWeekIndex === 'number') state.currentWeekIndex = parsed.currentWeekIndex;
+              if (parsed.dayLogs) state.dayLogs = parsed.dayLogs;
+              if (parsed.exerciseVideos) state.exerciseVideos = parsed.exerciseVideos;
+              if (parsed.calc) {
+                state.calc.ftp = Number(parsed.calc.ftp) || 295;
+                state.calc.weight = Number(parsed.calc.weight) || 85;
+                state.calc.css = parsed.calc.css || '1:50';
+                state.calc.run = parsed.calc.run || '4:25';
+              }
+            }
+          } catch (err) {
+            // Ignore malformed storage
+          }
+        }
+        updateStorageBadge();
+      }
+
+      function saveState() {
+        var payload = JSON.stringify({
+          currentWeekIndex: state.currentWeekIndex,
+          dayLogs: state.dayLogs,
+          exerciseVideos: state.exerciseVideos,
+          calc: state.calc
+        });
+        safeSetItem(STORAGE_KEY, payload);
+        updateStorageBadge();
+      }
+
+      function updateStorageBadge() {
+        var el = document.getElementById('storage-status');
+        if (!el) return;
+        if (usingMemoryFallback) {
+          el.innerHTML = '<span class="storage-dot" style="background:#f59e0b;"></span>Paměť relace (použij zálohu JSON)';
+        } else {
+          el.innerHTML = '<span class="storage-dot"></span>Uloženo v prohlížeči';
+        }
+      }
+
+      function showToast(msg, type) {
+        var box = document.getElementById('toast-box');
+        var item = document.createElement('div');
+        item.className = 'toast-item ' + (type || '');
+        item.textContent = msg;
+        box.appendChild(item);
+        setTimeout(function () {
+          item.style.opacity = '0';
+          item.style.transform = 'translateY(8px)';
+          setTimeout(function () {
+            if (item.parentNode) item.parentNode.removeChild(item);
+          }, 260);
+        }, 2600);
+      }
+
+      // =========================================================================
+      // 3. GENERATE ALL 197 WEEKS (MON 23. 11. 2026 – SUN 1. 9. 2030)
+      // =========================================================================
+      function addDays(baseDate, days) {
+        var d = new Date(baseDate.getTime());
+        d.setDate(d.getDate() + days);
+        return d;
+      }
+
+      function fmtDateFull(d) {
+        return d.getDate() + '. ' + (d.getMonth() + 1) + '. ' + d.getFullYear();
+      }
+
+      function fmtDateShort(d) {
+        return d.getDate() + '. ' + (d.getMonth() + 1) + '.';
+      }
+
+      function generate197Weeks() {
+        var weeks = [];
+        var startMonday = new Date(2026, 10, 23, 12, 0, 0); // 23. 11. 2026
+        var totalWeeks = 197;
+
+        var yearMeta = {
+          1: {
+            label: 'Rok 1 (2026/27)',
+            baseHours: 8.5,
+            ftpStart: 295, ftpEnd: 315,
+            swimPace: '1:44/100m',
+            bikeLongW: 195, bikeRaceW: 235,
+            runTempo: '4:20/km', runEasy: '5:10/km', brickPace: '4:35/km',
+            carbs: '75–85 g/h',
+            raceResult: '1,9 km 32:20 + T1 2:30 + 90 km 2:32:05 + T2 2:00 + 21,1 km 1:36:40 = 4:45:35'
+          },
+          2: {
+            label: 'Rok 2 (2027/28)',
+            baseHours: 11.0,
+            ftpStart: 315, ftpEnd: 330,
+            swimPace: '1:34/100m',
+            bikeLongW: 220, bikeRaceW: 265,
+            runTempo: '3:58/km', runEasy: '4:50/km', brickPace: '4:12/km',
+            carbs: '85–90 g/h',
+            raceResult: '1,9 km 29:45 + T1 2:15 + 90 km 2:20:15 + T2 1:45 + 21,1 km 1:28:35 = 4:22:35'
+          },
+          3: {
+            label: 'Rok 3 (2028/29)',
+            baseHours: 13.5,
+            ftpStart: 330, ftpEnd: 345,
+            swimPace: '1:27/100m',
+            bikeLongW: 235, bikeRaceW: 280,
+            runTempo: '3:42/km', runEasy: '4:35/km', brickPace: '3:55/km',
+            carbs: '90–95 g/h',
+            raceResult: '1,9 km 27:50 + T1 2:05 + 90 km 2:13:20 + T2 1:35 + 21,1 km 1:22:40 = 4:07:30'
+          },
+          4: {
+            label: 'Rok 4 (2029/30)',
+            baseHours: 15.5,
+            ftpStart: 345, ftpEnd: 360,
+            swimPace: '1:22/100m',
+            bikeLongW: 248, bikeRaceW: 292,
+            runTempo: '3:28/km', runEasy: '4:20/km', brickPace: '3:43/km',
+            carbs: '100–110 g/h',
+            raceResult: '1,9 km 26:35 + T1 2:00 + 90 km 2:08:15 + T2 1:30 + 21,1 km 1:18:25 = 3:56:45 (SUB-4!)'
+          }
+        };
+
+        for (var i = 0; i < totalWeeks; i++) {
+          var wNum = i + 1;
+          var mon = addDays(startMonday, i * 7);
+          var sun = addDays(mon, 6);
+
+          var yearNum = 1;
+          if (wNum >= 45 && wNum <= 96) yearNum = 2;
+          else if (wNum >= 97 && wNum <= 148) yearNum = 3;
+          else if (wNum >= 149) yearNum = 4;
+
+          var meta = yearMeta[yearNum];
+          var m = mon.getMonth() + 1;
+          var d = mon.getDate();
+
+          var isRace = (wNum === 40 || wNum === 92 || wNum === 144 || wNum === 196);
+          var isPostRace1 = (wNum === 41 || wNum === 93 || wNum === 145 || wNum === 197);
+          var isPostRace2 = (wNum === 42 || wNum === 94 || wNum === 146);
+          var isTaper2 = (wNum === 39 || wNum === 91 || wNum === 143 || wNum === 195);
+          var isTaper1 = (wNum === 38 || wNum === 90 || wNum === 142 || wNum === 194);
+          var isWinterTest = (wNum === 12 || wNum === 64 || wNum === 116 || wNum === 168);
+          var isSpringHM = (wNum === 23 || wNum === 75 || wNum === 127 || wNum === 179);
+          var isDeload = (wNum % 4 === 0) && !isRace && !isTaper1 && !isTaper2;
+
+          var phase = 'Základní báze';
+          var badgeType = 'badge-slate';
+          var volMult = 1.0;
+          var desc = '';
+
+          if (isRace) {
+            phase = 'HLAVNÍ ZÁVOD 70.3';
+            badgeType = 'badge-red';
+            volMult = 0.72;
+            desc = 'Závodní týden! Sacharidová superkompenzace (9–10 g/kg), kontrola TT kola a ostrý start. Cílový scénář: ' + meta.raceResult;
+          } else if (isPostRace1) {
+            phase = 'Posezónní regenerace 1';
+            badgeType = 'badge-green';
+            volMult = 0.25;
+            desc = 'Hluboká regenerace po půlironmanu. Bez běhu a těžké posilovny, sauna, masáž a spánek 9 hodin.';
+          } else if (isPostRace2) {
+            phase = 'Posezónní regenerace 2';
+            badgeType = 'badge-green';
+            volMult = 0.42;
+            desc = 'Pozvolný návrat lehkým plaváním, volným vyjetím na kole a krátkým klusem v zóně Z1.';
+          } else if (isTaper2) {
+            phase = 'Tapering 2 (Předzávodní)';
+            badgeType = 'badge-green';
+            volMult = 0.45;
+            desc = 'Snížení objemu o 55 %, zachování krátkých závodních špiček pro svalové napětí a zahájení sacharidové superkompenzace.';
+          } else if (isTaper1) {
+            phase = 'Tapering 1 (Ladění)';
+            badgeType = 'badge-green';
+            volMult = 0.62;
+            desc = 'Odstranění únavy z vrcholného bloku, vyřazení těžkých vah v posilovně a ladění závodního tempa.';
+          } else if (isWinterTest) {
+            phase = 'Kontrolní testy FTP & 5 km';
+            badgeType = 'badge-amber';
+            volMult = 0.65;
+            desc = 'Diagnostika výkonnosti po zkouškovém: 20min FTP test na Tacx NEO 2T, plavecký CSS test a ostrý běh na 5 km.';
+          } else if (isSpringHM) {
+            phase = 'Jarní test & Ostrý půlmaraton';
+            badgeType = 'badge-amber';
+            volMult = 0.85;
+            desc = 'Ostrý jarní závodní půlmaraton (21,1 km) z čerstvých nohou pro ověření běžecké rychlosti.';
+          } else if (m === 1 || (m === 2 && d <= 7)) {
+            phase = 'Zimní zkouškové – udržovací blok';
+            badgeType = 'badge-amber';
+            volMult = 0.65;
+            desc = 'Objem snížen o 35 % kvůli zkouškám. Krátké 50–60min jednotky ráno nebo mezi učením + priorita spánku 8,5 h.';
+          } else if (m === 5 || (m === 6 && d <= 7)) {
+            phase = 'Letní zkouškové – intenzita';
+            badgeType = 'badge-amber';
+            volMult = 0.72;
+            desc = 'Zkouškové / státnicové období: nižší objem, ale vysoká závodní kvalita v aero posedu a přechodech kolo–běh.';
+          } else if (isDeload) {
+            phase = 'Regenerační týden 3:1';
+            badgeType = 'badge-green';
+            volMult = 0.68;
+            desc = 'Plánovaný odlehčovací týden po třech týdnech zátěže (rytmus 3:1). Snížení objemu o 32 % pro superkompenzaci.';
+          } else if (m === 6 || m === 7) {
+            phase = 'Závodní vrchol (Peak)';
+            badgeType = 'badge-cyan';
+            volMult = 1.08;
+            desc = 'Nejvyšší specifické zatížení sezóny: dlouhé jízdy v aero zalehnutí, simulace depa T2 a příjem ' + meta.carbs + ' sacharidů.';
+          } else if (m >= 2 && m <= 4) {
+            phase = 'Jarní práh a aero';
+            badgeType = 'badge-slate';
+            volMult = 1.0;
+            desc = 'Budování prahového výkonu (Sweet-Spot a Z4 intervaly v aero posedu) a prodlužování víkendových bricků.';
+          } else if (m === 9) {
+            phase = 'Přechodné období';
+            badgeType = 'badge-slate';
+            volMult = 0.75;
+            desc = 'Návrat ke strukturovanému tréninku, náběh silového programu a technické plavecké drily.';
+          } else {
+            phase = 'Základní báze';
+            badgeType = 'badge-slate';
+            volMult = 0.98;
+            desc = 'Polarizovaná vytrvalost (80 % Z2), těžká silová příprava na watty a ekonomiku běhu + budování kraulového záběru.';
+          }
+
+          var progressInYear = (i % 52) / 52;
+          var ftp = Math.round(meta.ftpStart + (meta.ftpEnd - meta.ftpStart) * progressInYear);
+          var plannedHours = Math.round(meta.baseHours * volMult * 10) / 10;
+
+          var days = createDaysForWeek({
+            yearNum: yearNum,
+            mon: mon,
+            meta: meta,
+            ftp: ftp,
+            isRace: isRace,
+            isPostRace1: isPostRace1,
+            isTaper1: isTaper1,
+            isTaper2: isTaper2,
+            isWinterTest: isWinterTest,
+            isSpringHM: isSpringHM,
+            isDeload: isDeload,
+            phase: phase
+          });
+
+          weeks.push({
+            weekNum: wNum,
+            yearNum: yearNum,
+            yearLabel: meta.label,
+            startDate: mon,
+            endDate: sun,
+            dateStr: fmtDateFull(mon) + ' – ' + fmtDateFull(sun),
+            phase: phase,
+            badgeType: badgeType,
+            desc: desc,
+            plannedHours: plannedHours,
+            ftp: ftp,
+            targets: 'FTP ' + ftp + ' W • ' + meta.swimPace + ' • ' + meta.runTempo,
+            days: days
+          });
+        }
+        return weeks;
+      }
+
+      function createDaysForWeek(ctx) {
+        var yearNum = ctx.yearNum;
+        var mon = ctx.mon;
+        var meta = ctx.meta;
+        var ftp = ctx.ftp;
+        var z2W = Math.round(ftp * 0.65) + '–' + Math.round(ftp * 0.75) + ' W';
+        var ssW = Math.round(ftp * 0.88) + '–' + Math.round(ftp * 0.93) + ' W';
+        var z4W = Math.round(ftp * 0.96) + '–' + Math.round(ftp * 1.03) + ' W';
+        var m = mon.getMonth() + 1;
+
+        if (ctx.isRace) {
+          return [
+            { dayIdx: 0, name: 'Pondělí', date: addDays(mon, 0), disc: 'swim', discLabel: 'Plavání', hours: 0.8, title: 'Lehké vyplavání + drily', metric: (yearNum * 500 + 1000) + ' m • ' + meta.swimPace, details: 'Rozplavání 400 m, 6× 50 m catching-up, 4× 100 m v závodním rytmu s dlouhou pauzou 30 s, 300 m výplav.' },
+            { dayIdx: 1, name: 'Úterý', date: addDays(mon, 1), disc: 'rest', discLabel: 'Regenerace', hours: 0.2, title: 'Mobilita hrudníku & odpočinek', metric: 'Spánek 8,5+ h', details: '10 min uvolnění hrudní páteře na pěnovém válci a protažení flexorů kyčle. Kontrola výživy a hydratace.' },
+            { dayIdx: 2, name: 'Středa', date: addDays(mon, 2), disc: 'bike', discLabel: 'Kolo', hours: 0.7, title: 'Předzávodní rozjetí v aero posedu', metric: '40 min • 2× 2 min @ ' + meta.bikeRaceW + ' W', details: '20 min lehce Z1/Z2, 2× 2 min v závodním tempu a aero zalehnutí, 15 min lehké vytočení nohou.' },
+            { dayIdx: 3, name: 'Čtvrtek', date: addDays(mon, 3), disc: 'run', discLabel: 'Běh', hours: 0.5, title: 'Krátký aktivační klus + rovinky', metric: '25 min • ' + meta.runEasy, details: '15 min lehký klus v Z1/Z2, 3× 80 m svižné rovinky na uvolnění kroku (kadence 182+), 5 min výklus.' },
+            { dayIdx: 4, name: 'Pátek', date: addDays(mon, 4), disc: 'rest', discLabel: 'Volno', hours: 0.0, title: 'Úplné volno & sacharidová nálož', metric: 'Sacharidy 9,5–10 g/kg', details: 'Úplný klid nohou, prezentace na závod, příjem snadno stravitelných sacharidů a elektrolytů.' },
+            { dayIdx: 5, name: 'Sobota', date: addDays(mon, 5), disc: 'brick', discLabel: 'Aktivace', hours: 0.5, title: 'Předzávodní rozhýbání & depo', metric: '15 min voda + 15 min kolo', details: 'Krátké otestování vody v neoprenu, 15 min kontrola řazení a brzd na kole, uložení kola do depa T1.' },
+            { dayIdx: 6, name: 'Neděle', date: addDays(mon, 6), disc: 'brick', discLabel: 'ZÁVOD 70.3', hours: 4.5, title: 'HLAVNÍ ZÁVOD IRONMAN 70.3', metric: meta.raceResult.split('= ')[1], details: 'Plavání 1,9 km v balíku, rychlé depo T1, 90 km cyklistika s příjmem ' + meta.carbs + ', depo T2 a 21,1 km běh. Rozpis: ' + meta.raceResult }
+          ];
+        }
+
+        if (ctx.isPostRace1) {
+          return [
+            { dayIdx: 0, name: 'Pondělí', date: addDays(mon, 0), disc: 'rest', discLabel: 'Volno', hours: 0.0, title: 'Úplné posezónní volno', metric: 'Regenerace CNS', details: 'Žádný trénink. Dostatek bílkovin, hydratace a spánek 9 hodin.' },
+            { dayIdx: 1, name: 'Úterý', date: addDays(mon, 1), disc: 'rest', discLabel: 'Regenerace', hours: 0.0, title: 'Sauna & sportovní masáž', metric: 'Uvolnění svalů', details: 'Jemná regenerační masáž dolních končetin a zad, lehká procházka.' },
+            { dayIdx: 2, name: 'Středa', date: addDays(mon, 2), disc: 'rest', discLabel: 'Volno', hours: 0.0, title: 'Vyhodnocení závodu', metric: 'Analýza dat', details: 'Zápis poznámek, mezičasů, wattů a výživy ze závodu do deníku.' },
+            { dayIdx: 3, name: 'Čtvrtek', date: addDays(mon, 3), disc: 'swim', discLabel: 'Plavání', hours: 0.8, title: 'Volné vyplavání bez stopek', metric: '1,8 km • Z1', details: 'Klidné plavání pro prokrvení horní poloviny těla, kraul a znak bez měření času.' },
+            { dayIdx: 4, name: 'Pátek', date: addDays(mon, 4), disc: 'rest', discLabel: 'Volno', hours: 0.0, title: 'Úplné volno', metric: 'Odpočinek', details: 'Volný pátek.' },
+            { dayIdx: 5, name: 'Sobota', date: addDays(mon, 5), disc: 'bike', discLabel: 'Kolo', hours: 1.0, title: 'Lehké vytočení nohou', metric: '60 min • Z1', details: 'Vyjížďka na pohodu s vysokou kadencí 90+ ot./min bez sledování wattmetru.' },
+            { dayIdx: 6, name: 'Neděle', date: addDays(mon, 6), disc: 'rest', discLabel: 'Regenerace', hours: 0.5, title: 'Bez běhu (ochrana šlach)', metric: 'Procházka / mobilita', details: 'Týden po 70.3 vynecháváme běžecké dopady pro kompletní regeneraci svalů a šlach.' }
+          ];
+        }
+
+        var isReduced = ctx.isDeload || ctx.isTaper1 || ctx.isTaper2 || ctx.phase.indexOf('zkouškové') !== -1;
+        var swimKm1 = isReduced ? (1.7 + yearNum * 0.3).toFixed(1) : (2.2 + yearNum * 0.4).toFixed(1);
+        var swimKm2 = (parseFloat(swimKm1) + 0.1).toFixed(1);
+        var bikeTueMin = ctx.isTaper2 ? 45 : ctx.isTaper1 ? 65 : isReduced ? 60 : (65 + yearNum * 8);
+        var runWedKm = ctx.isTaper2 ? 7 : ctx.isTaper1 ? 8 : isReduced ? 8 + Math.floor(yearNum / 2) : (8 + yearNum * 1.5);
+        var bikeSatMin = ctx.isTaper2 ? 55 : ctx.isTaper1 ? 105 : isReduced ? (105 + yearNum * 12) : (145 + yearNum * 35);
+        var brickMin = ctx.isTaper2 ? 15 : ctx.isTaper1 ? 20 : ctx.isDeload ? 0 : (15 + yearNum * 7);
+        var runSunKm = ctx.isTaper2 ? 8 : ctx.isTaper1 ? 11 : isReduced ? (11 + yearNum * 1.5) : (14 + yearNum * 2.5);
+
+        var strengthMon = isReduced ? 'Síla C (Udržovací Full-Body 35 min)' : 'Síla A (Horní polovina těla & Core 45 min)';
+        var strengthWed = isReduced ? 'Mobilita hrudní páteře & Core (15 min)' : 'Síla B (Watty na kole & Ekonomika běhu 50 min)';
+
+        var bikeTueText = ctx.isWinterTest
+          ? '20 min zahřátí Z2, ostrý 20min FTP test na Tacx NEO 2T (cíl ' + Math.round(ftp / 0.95) + ' W -> FTP ' + ftp + ' W), 15 min vyjetí.'
+          : (ctx.phase.indexOf('vrchol') !== -1 || ctx.phase.indexOf('práh') !== -1)
+          ? '15 min zahřátí Z2, 3× 15 min v aero posedu @ ' + ssW + ' / ' + meta.bikeRaceW + ' W (pauza 4 min), 10 min vyjetí.'
+          : '15 min zahřátí Z2, 4× 8 min prahové intervaly na Tacx NEO 2T @ ' + z4W + ' (pauza 3 min), 10 min vyjetí.';
+
+        var runWedText = ctx.isTaper2
+          ? '3 km rozklus, 4× 400 m v závodním tempu (' + meta.runTempo + '), 2 km výklus.'
+          : '2 km rozklus + běžecká abeceda, 5–6× 1 000 m intervaly @ ' + meta.runTempo + ' (meziklus 90 s), 1,5 km výklus.';
+
+        var isOpenWater = (m >= 6 && m <= 8);
+        var thuTitle = isOpenWater ? 'Otevřená voda ' + swimKm2 + ' km (neopren)' : 'Bazén ' + swimKm2 + ' km (packy & piškot)';
+        var thuDetails = isOpenWater
+          ? 'Plavání na volné vodě v neoprenu: nácvik orientace na bójky, ostré 100m nástupy a úseky 500–1 000 m @ ' + meta.swimPace + '.'
+          : 'Bazén: 300 m rozplavání, 4–5× 400 m s packami a piškotem @ ' + meta.swimPace + ' (pauza 25 s), 4× 50 m sprint.';
+        if (yearNum >= 2 && !isReduced) {
+          thuDetails += ' Odpoledne lehký regenerační běh 7–9 km Z1/Z2.';
+        }
+
+        var satTitle = brickMin > 0
+          ? 'Dlouhé kolo ' + bikeSatMin + ' min + ' + brickMin + ' min Brick běh'
+          : 'Vytrvalostní kolo ' + bikeSatMin + ' min Z2';
+        var satDetails = brickMin > 0
+          ? 'Kolo ' + bikeSatMin + ' min (' + meta.bikeLongW + '–' + meta.bikeRaceW + ' W), příjem ' + meta.carbs + ' sacharidů + ihned přechod na ' + brickMin + ' min Brick běh tempem ' + meta.brickPace + '.'
+          : 'Souvislá vyjížďka ' + bikeSatMin + ' min v zóně Z2 (' + z2W + '), vysoká kadence 90+ ot./min, hydratace.';
+
+        var sunTitle = ctx.isSpringHM
+          ? 'Ostrý jarní půlmaraton (21,1 km)'
+          : ctx.isWinterTest
+          ? 'Kontrolní test 5 km na maximum'
+          : 'Dlouhý aerobní běh ' + runSunKm + ' km';
+        var sunDetails = ctx.isSpringHM
+          ? 'Závodní půlmaraton (21,1 km) z čerstvých nohou pro ověření běžecké ekonomiky a tempa.'
+          : ctx.isWinterTest
+          ? 'Rozklus 3 km + ostrý běh 5 km na maximum pro stanovení nových běžeckých zón + 3 km výklus.'
+          : 'Dlouhý aerobní běh ' + runSunKm + ' km čistě v Z2 (' + meta.runEasy + ', nosní dýchání / konverzační tempo) + mobilita na válci.';
+        if (yearNum >= 2 && !isReduced && !ctx.isSpringHM && !ctx.isWinterTest) {
+          sunDetails = 'Dopoledne 3. plavání (' + (2.0 + yearNum * 0.4).toFixed(1) + ' km aerobně) + odpoledne: ' + sunDetails;
+        }
+
+        return [
+          {
+            dayIdx: 0, name: 'Pondělí', date: addDays(mon, 0), disc: 'swim', discLabel: 'Plavání + Síla',
+            hours: Math.round((parseFloat(swimKm1) * 0.35 + (ctx.isTaper2 ? 0 : 0.65)) * 10) / 10,
+            title: 'Plavání ' + swimKm1 + ' km + ' + strengthMon,
+            metric: swimKm1 + ' km @ ' + meta.swimPace + ' + Posilovna',
+            details: 'Bazén: 400 m rozplavání, 8× 50 m drily (catching-up, vysoký loket EVF), hlavní série 10–15× 100 m @ ' + meta.swimPace + ' (pauza 15–20 s). Večer: ' + strengthMon + '.'
+          },
+          {
+            dayIdx: 1, name: 'Úterý', date: addDays(mon, 1), disc: 'bike', discLabel: 'Kolo',
+            hours: Math.round((bikeTueMin / 60) * 10) / 10,
+            title: ctx.isWinterTest ? 'Cyklistika: 20min FTP Test' : 'Cyklistika: Práh & Aero posed',
+            metric: bikeTueMin + ' min • ' + (ctx.isWinterTest ? 'MAX TEST' : z4W),
+            details: bikeTueText
+          },
+          {
+            dayIdx: 2, name: 'Středa', date: addDays(mon, 2), disc: 'run', discLabel: 'Běh + Síla',
+            hours: Math.round((runWedKm * 0.08 + 0.6) * 10) / 10,
+            title: 'Běh ' + runWedKm + ' km + ' + strengthWed,
+            metric: runWedKm + ' km @ ' + meta.runTempo,
+            details: runWedText + ' Večer: ' + strengthWed + '.'
+          },
+          {
+            dayIdx: 3, name: 'Čtvrtek', date: addDays(mon, 3), disc: 'swim', discLabel: yearNum >= 2 ? 'Plavání + Běh' : 'Plavání',
+            hours: Math.round((parseFloat(swimKm2) * 0.35 + (yearNum >= 2 && !isReduced ? 0.65 : 0)) * 10) / 10,
+            title: thuTitle,
+            metric: swimKm2 + ' km @ ' + meta.swimPace,
+            details: thuDetails
+          },
+          {
+            dayIdx: 4, name: 'Pátek', date: addDays(mon, 4), disc: 'rest', discLabel: 'Volno',
+            hours: 0.0,
+            title: 'Úplný odpočinek (Reset CNS)',
+            metric: 'Spánek 8,5 h • Mobilita 10 min',
+            details: 'Pevně zakotvený volný den bez tréninku. Superkompenzace před víkendovým objemem, 10 min extenze hrudní páteře na válci.'
+          },
+          {
+            dayIdx: 5, name: 'Sobota', date: addDays(mon, 5), disc: brickMin > 0 ? 'brick' : 'bike', discLabel: brickMin > 0 ? 'Brick (Kolo + Běh)' : 'Dlouhé kolo',
+            hours: Math.round(((bikeSatMin + brickMin) / 60) * 10) / 10,
+            title: satTitle,
+            metric: bikeSatMin + ' min @ ' + meta.bikeLongW + ' W' + (brickMin > 0 ? ' + ' + brickMin + ' min @ ' + meta.brickPace : ''),
+            details: satDetails
+          },
+          {
+            dayIdx: 6, name: 'Neděle', date: addDays(mon, 6), disc: 'run', discLabel: 'Dlouhý běh',
+            hours: Math.round((runSunKm * 0.085 + (yearNum >= 2 && !isReduced ? 0.65 : 0)) * 10) / 10,
+            title: sunTitle,
+            metric: runSunKm + ' km @ ' + meta.runEasy,
+            details: sunDetails
+          }
+        ];
+      }
+
+      var ALL_WEEKS = generate197Weeks();
+
+      // =========================================================================
+      // 4. EXERCISE LIBRARY (15 EXERCISES WITH INLINE SVG DIAGRAMS)
+      // =========================================================================
+      var EXERCISES = [
+        {
+          id: 'hip-thrust',
+          cat: 'watts',
+          catLabel: 'Watty na kole',
+          title: 'Barbell Hip Thrust (extenze kyčle)',
+          sets: '4 série × 6–8 opakování • Pauza 2 min',
+          muscles: 'Gluteus maximus, Hamstringy',
+          benefit: 'Nejsilnější izolovaný cvik na extenzi v kyčli. Zvyšuje maximální sílu záběru do pedálů v úhlu zavřeného kyčle při aero zalehnutí na TT kole.',
+          technique: 'Lopatky opři o hranu lavičky, osa leží přes polstrování v ohybu kyčlí. S výdechem explozivně zvedni pánev do vodorovné polohy, nahoře 1 s zatni hýždě a kontrolovaně spouštěj dolů.',
+          ytSearch: 'https://www.youtube.com/results?search_query=barbell+hip+thrust+proper+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="10" y="92" width="220" height="4" rx="2" fill="#334155"/><rect x="25" y="58" width="38" height="34" rx="4" fill="#1e293b" stroke="#475569" stroke-width="2"/><path d="M55 60 L122 60 L152 90" stroke="#f59e0b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="46" cy="50" r="8" fill="#94a3b8"/><line x1="116" y1="38" x2="116" y2="82" stroke="#e2e8f0" stroke-width="3"/><circle cx="116" cy="38" r="10" fill="#06b6d4"/><circle cx="116" cy="82" r="10" fill="#06b6d4"/><path d="M124 26 L124 10 M118 16 L124 10 L130 16" stroke="#10b981" stroke-width="2.5" fill="none"/><text x="140" y="22" fill="#06b6d4" font-size="10" font-weight="700">+WATTY V AERO</text></svg>'
+        },
+        {
+          id: 'single-leg-press',
+          cat: 'watts',
+          catLabel: 'Watty na kole',
+          title: 'Jednonožní (unilaterální) Leg Press',
+          sets: '3 série × 8 opakování na nohu • Pauza 90 s',
+          muscles: 'Kvadricepsy, Gluteus medius & maximus',
+          benefit: 'Šlapání je střídavý pohyb jedné nohy po druhé. Jednonožní tlak odstraňuje silovou asymetrii mezi levou a pravou nohou a zvyšuje tlak na pedál.',
+          technique: 'Chodidlo umísti výš na desku, bedra a pánev drž pevně přitisknutá k opěrce. Spouštěj platformu do úhlu 90° v koleni a explozivně odtlač.',
+          ytSearch: 'https://www.youtube.com/results?search_query=single+leg+press+technique',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><path d="M35 50 L65 82 L112 82" stroke="#475569" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="48" cy="38" r="8" fill="#94a3b8"/><path d="M55 48 L72 78 L125 60 L165 40" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><line x1="158" y1="20" x2="182" y2="62" stroke="#e2e8f0" stroke-width="5" stroke-linecap="round"/><text x="115" y="98" fill="#f59e0b" font-size="10" font-weight="700">1 NOHA = ČISTÝ PŘENOS</text></svg>'
+        },
+        {
+          id: 'bulgarian-squat',
+          cat: 'watts',
+          catLabel: 'Watty na kole',
+          title: 'Bulharské dřepy s jednoručkami / Zadní dřep',
+          sets: '4 série × 6–8 opakování • Pauza 2 min',
+          muscles: 'Kvadricepsy, Hýždě, Adduktory',
+          benefit: 'Buduje maximální sílu dolních končetin pro vysoký wattový výkon na rovině i v kopcích a stabilizuje koleno při běhu v únavě.',
+          technique: 'Zadní nárt opři o lavičku, trup mírně nakloněný vpřed, kontrolovaný sestup až ke koleni blízko země a dynamický tlak přes přední chodidlo vzhůru.',
+          ytSearch: 'https://www.youtube.com/results?search_query=bulgarian+split+squat+proper+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="20" y="96" width="200" height="4" rx="2" fill="#334155"/><rect x="35" y="72" width="35" height="24" rx="3" fill="#1e293b" stroke="#475569" stroke-width="2"/><circle cx="115" cy="24" r="8" fill="#94a3b8"/><path d="M115 34 L112 64 L138 76 L132 96" stroke="#f59e0b" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M112 64 L78 76 L58 72" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round" fill="none"/><text x="150" y="45" fill="#06b6d4" font-size="10" font-weight="700">SÍLA &amp; ROVNOVÁHA</text></svg>'
+        },
+        {
+          id: 'leg-curl',
+          cat: 'watts',
+          catLabel: 'Watty na kole',
+          title: 'Zakopávání vleže na stroji (Leg Curl)',
+          sets: '3 série × 8–10 opakování • Pauza 90 s',
+          muscles: 'Hamstringy (Biceps femoris, Semitendinosus)',
+          benefit: 'Pomáhá přetáhnout pedál přes dolní úvrať při vysoké kadenci 90+ ot./min a chrání kolenní vazy při přechodu z kola na běh.',
+          technique: 'Pánev pevně přitisknutá k lavici, válec nad Achillovou šlachou. Rychlý tah pat k hýždím a 3sekundové kontrolované brzdění zpět.',
+          ytSearch: 'https://www.youtube.com/results?search_query=lying+leg+curl+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><path d="M30 70 L110 70 L165 82" stroke="#475569" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="44" cy="58" r="8" fill="#94a3b8"/><path d="M54 62 L115 62 L152 34" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="155" cy="32" r="6" fill="#06b6d4"/><text x="35" y="98" fill="#94a3b8" font-size="10" font-weight="700">3s EXCENTRICKÁ KONTROLA</text></svg>'
+        },
+        {
+          id: 'calf-raises',
+          cat: 'run',
+          catLabel: 'Běžecká ekonomika',
+          title: 'Těžké výpony na lýtka v sedě i ve stoji',
+          sets: '4 série × 6–8 opakování (3 s pauza dole) • Pauza 90 s',
+          muscles: 'M. gastrocnemius, M. soleus, Achillova šlacha',
+          benefit: 'Zvyšuje tuhost (stiffness) Achillovy šlachy, která při běhu vrací elastickou energii zdarma a zlepšuje běžeckou ekonomiku o 4–8 %.',
+          technique: '2 série ve stoji (propnutá kolena) a 2 série v sedě (pokrčená kolena pro soleus). Dole vždy 3 s zastav v protažení, poté explozivní výpon na špičky.',
+          ytSearch: 'https://www.youtube.com/results?search_query=heavy+calf+raises+running+economy',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="30" y="96" width="180" height="4" rx="2" fill="#334155"/><rect x="85" y="82" width="45" height="14" rx="2" fill="#475569"/><line x1="108" y1="18" x2="108" y2="62" stroke="#94a3b8" stroke-width="7" stroke-linecap="round"/><path d="M108 62 L112 82 L128 82" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M145 80 L145 48 M139 55 L145 48 L151 55" stroke="#06b6d4" stroke-width="2.5" fill="none"/><text x="156" y="68" fill="#10b981" font-size="10" font-weight="700">TUHOST ŠLACHY</text></svg>'
+        },
+        {
+          id: 'pogo-hops',
+          cat: 'run',
+          catLabel: 'Běžecká ekonomika',
+          title: 'Pogo Hops (kotníkové odrazy)',
+          sets: '3 série × 15–20 s • Pauza 90 s',
+          muscles: 'Lýtkový komplex, Achillova šlacha, Klenba nohy',
+          benefit: 'Učí nervový systém bleskově aktivovat lýtko před dopadem a zkracuje dobu kontaktu chodidla se zemí pod 210 ms.',
+          technique: 'Zařazuj hned po zahřátí. Nízké, rychlé a pružné odrazy pouze z kotníků s téměř propnutými koleny, špičky přitahuj ve vzduchu nahoru.',
+          ytSearch: 'https://www.youtube.com/results?search_query=pogo+hops+plyometrics+runners',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="25" y="96" width="190" height="4" rx="2" fill="#334155"/><circle cx="120" cy="18" r="8" fill="#94a3b8"/><line x1="120" y1="27" x2="120" y2="58" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/><path d="M120 58 L116 80 L126 82" stroke="#10b981" stroke-width="7" stroke-linecap="round" fill="none"/><path d="M90 90 Q105 68 120 90 Q135 68 150 90" stroke="#06b6d4" stroke-width="2.2" fill="none"/><text x="152" y="50" fill="#10b981" font-size="10" font-weight="700">&lt; 210 ms KONTAKT</text></svg>'
+        },
+        {
+          id: 'copenhagen-plank',
+          cat: 'run',
+          catLabel: 'Běžecká ekonomika',
+          title: 'Copenhagen Plank (stabilita pánve)',
+          sets: '3 série × 25–30 s na stranu • Pauza 45 s',
+          muscles: 'Adduktory kyčle, Gluteus medius, Šikmé břišní svaly',
+          benefit: 'Zabraňuje propadání protilehlé pánve do strany při dopadu nohy v běhu, čímž šetří energii v posledních kilometrech půlmaratonu.',
+          technique: 'Opři vnitřní stranu horního kolene (nebo kotníku) o lavičku, spodní předloktí pod ramenem, zvedni pánev do přímky.',
+          ytSearch: 'https://www.youtube.com/results?search_query=copenhagen+plank+exercise',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="20" y="96" width="200" height="4" rx="2" fill="#334155"/><rect x="155" y="66" width="55" height="30" rx="4" fill="#1e293b" stroke="#475569" stroke-width="2"/><circle cx="52" cy="58" r="8" fill="#94a3b8"/><path d="M64 72 L64 96 L78 96" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round" fill="none"/><line x1="60" y1="64" x2="182" y2="66" stroke="#10b981" stroke-width="7" stroke-linecap="round"/><text x="85" y="48" fill="#10b981" font-size="10" font-weight="700">STABILITA PÁNVE</text></svg>'
+        },
+        {
+          id: 'pallof-press',
+          cat: 'run',
+          catLabel: 'Běžecká ekonomika',
+          title: 'Pallof Press (anti-rotace středu těla)',
+          sets: '3 série × 10 opakování na stranu • Pauza 45 s',
+          muscles: 'M. transversus abdominis, Šikmé břišní svaly',
+          benefit: 'Udržuje pevný a neutrální trup bez zbytečné rotace ramen při běhu i při silovém záběru v TT hrazdě.',
+          technique: 'Postav se bokem ke kladce, uchop madlo před hrudníkem. S výdechem vytlač paže rovně vpřed a 2 s odolávej tahu do strany.',
+          ytSearch: 'https://www.youtube.com/results?search_query=pallof+press+proper+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="25" y="16" width="12" height="82" rx="3" fill="#475569"/><line x1="37" y1="48" x2="112" y2="48" stroke="#06b6d4" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="135" cy="26" r="8" fill="#94a3b8"/><line x1="135" y1="35" x2="135" y2="74" stroke="#10b981" stroke-width="8" stroke-linecap="round"/><line x1="112" y1="48" x2="135" y2="44" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/><line x1="135" y1="74" x2="128" y2="98" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/><line x1="135" y1="74" x2="144" y2="98" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="155" y="55" fill="#06b6d4" font-size="10" font-weight="700">ANTI-ROTACE</text></svg>'
+        },
+        {
+          id: 'dead-bug',
+          cat: 'run',
+          catLabel: 'Běžecká ekonomika',
+          title: 'Dead Bug (mrtvý brouk – kontrola pánve)',
+          sets: '3 série × 10 opakování na stranu • Pauza 45 s',
+          muscles: 'Hluboký stabilizační systém (HSSP), Přímý a příčný sval břišní',
+          benefit: 'Učí oddělit pohyb kyčlí a ramen od pánve, takže se při únavě v běhu neprohýbáš v bedrech.',
+          technique: 'Vleže na zádech přitiskni bedra k podložce, kolena v 90°. S pomalým výdechem spouštěj protilehlou paži a nohu těsně nad zem bez odlepení beder.',
+          ytSearch: 'https://www.youtube.com/results?search_query=dead+bug+core+exercise+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="20" y="92" width="200" height="4" rx="2" fill="#334155"/><circle cx="62" cy="80" r="8" fill="#94a3b8"/><line x1="72" y1="84" x2="145" y2="84" stroke="#10b981" stroke-width="8" stroke-linecap="round"/><path d="M145 84 L145 56 L172 56" stroke="#10b981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M145 84 L195 82" stroke="#06b6d4" stroke-width="6" stroke-linecap="round" fill="none"/><line x1="88" y1="84" x2="42" y2="76" stroke="#06b6d4" stroke-width="5" stroke-linecap="round"/><text x="80" y="34" fill="#10b981" font-size="10" font-weight="700">NEUTRÁLNÍ PÁNEV</text></svg>'
+        },
+        {
+          id: 'chest-row',
+          cat: 'upper',
+          catLabel: 'Horní polovina těla',
+          title: 'Přítahy s oporou hrudníku (Chest-Supported Row)',
+          sets: '4 série × 8–10 opakování • Pauza 2 min',
+          muscles: 'Latissimus dorsi, Rombické svaly, Střední trapéz',
+          benefit: 'Buduje tahovou sílu pro kraulový záběr pod vodou a posiluje mezilopatkové svaly pro stabilní držení trupu.',
+          technique: 'Opři hrudník o šikmou lavičku (30°), táhni lokty dozadu podél těla a vědomě stlač lopatky k sobě, s nádechem kontrolovaně protáhni.',
+          ytSearch: 'https://www.youtube.com/results?search_query=chest+supported+row+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><line x1="55" y1="90" x2="128" y2="44" stroke="#475569" stroke-width="7" stroke-linecap="round"/><circle cx="136" cy="32" r="8" fill="#94a3b8"/><line x1="78" y1="70" x2="126" y2="40" stroke="#a855f7" stroke-width="8" stroke-linecap="round"/><path d="M116 46 L102 70" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/><circle cx="102" cy="74" r="7" fill="#06b6d4"/><text x="148" y="72" fill="#a855f7" font-size="10" font-weight="700">SÍLA ZÁBĚRU</text></svg>'
+        },
+        {
+          id: 'incline-press',
+          cat: 'upper',
+          catLabel: 'Horní polovina těla',
+          title: 'Tlaky jednoruček na šikmé lavici (20°–30°)',
+          sets: '4 série × 6–10 opakování • Pauza 2 min',
+          muscles: 'Prsní svaly, Přední delty, Tricepsy',
+          benefit: 'Udržuje atletický svalový objem horní poloviny těla a posiluje úvodní fázi záběru v plavání.',
+          technique: 'Lopatky stažené k sobě a dolů, chodidla pevně na zemi. Spouštěj jednoručky vedle horní části hrudníku (lokty 45° od těla) a dynamicky vytlač vzhůru.',
+          ytSearch: 'https://www.youtube.com/results?search_query=incline+dumbbell+press+form',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><line x1="55" y1="90" x2="128" y2="48" stroke="#475569" stroke-width="7" stroke-linecap="round"/><circle cx="136" cy="36" r="8" fill="#94a3b8"/><line x1="80" y1="72" x2="124" y2="46" stroke="#a855f7" stroke-width="8" stroke-linecap="round"/><line x1="112" y1="50" x2="112" y2="20" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/><rect x="103" y="14" width="18" height="7" rx="2" fill="#06b6d4"/><text x="145" y="72" fill="#a855f7" font-size="10" font-weight="700">SVALOVÁ HMOTA</text></svg>'
+        },
+        {
+          id: 'arms-superset',
+          cat: 'upper',
+          catLabel: 'Horní polovina těla',
+          title: 'Supersérie: Bicepsový zdvih + Tricepsová kladka',
+          sets: '3 série × 10–12 + 12 opakování • Pauza 60 s',
+          muscles: 'Biceps brachii, Triceps brachii',
+          benefit: 'Triceps nese váhu trupu na loketních opěrkách TT kola po dobu 90 km a dokončuje závěrečnou fázi záběru ruky pod vodou.',
+          technique: 'Biceps s lokty fixovanými u těla bez houpání; ihned poté tricepsové stahování lana s vytočením dlaní ven v dolní fázi.',
+          ytSearch: 'https://www.youtube.com/results?search_query=tricep+rope+pushdown+and+curl',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><circle cx="120" cy="20" r="8" fill="#94a3b8"/><line x1="120" y1="29" x2="120" y2="80" stroke="#475569" stroke-width="9" stroke-linecap="round"/><path d="M120 38 L100 58 L84 40" stroke="#a855f7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M120 38 L140 58 L152 80" stroke="#a855f7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="35" y="98" fill="#a855f7" font-size="10" font-weight="700">OPORA V AERO HRAZDĚ</text></svg>'
+        },
+        {
+          id: 'swim-evf',
+          cat: 'swim',
+          catLabel: 'Plavání a mobilita',
+          title: 'Kraulový dril: Vysoký loket (EVF)',
+          sets: '8× 50 m na začátku každého plavání',
+          muscles: 'Latissimus dorsi, Rotátorová manžeta, Core',
+          benefit: 'Zabraňuje „propadání lokte“ a zvyšuje plochu předloktí, kterou se opíráš o vodu – zrychlí kraul o 15–20 s/100 m.',
+          technique: 'Po natažení paže vpřed ohni zápěstí a loket tak, aby konečky prstů směřovaly ke dnu bazénu, zatímco loket zůstává vysoko u hladiny.',
+          ytSearch: 'https://www.youtube.com/results?search_query=freestyle+early+vertical+forearm+evf+drill',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><path d="M15 46 Q45 40 75 46 T135 46 T195 46 T225 46" stroke="#3b82f6" stroke-width="2" fill="none"/><circle cx="178" cy="42" r="8" fill="#94a3b8"/><line x1="65" y1="48" x2="168" y2="44" stroke="#3b82f6" stroke-width="8" stroke-linecap="round"/><path d="M162 46 L176 68 L166 88" stroke="#06b6d4" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="40" y="28" fill="#06b6d4" font-size="10" font-weight="700">VYSOKÝ LOKET (EVF)</text></svg>'
+        },
+        {
+          id: 'swim-catchup',
+          cat: 'swim',
+          catLabel: 'Plavání a mobilita',
+          title: 'Plavecký dril: Catching-up (dostihování)',
+          sets: '6× 50 m při rozplavání',
+          muscles: 'Široký sval zádový, Šikmé břišní svaly, Koordinace',
+          benefit: 'Prodlužuje záběr, zlepšuje splývavou polohu boků u hladiny a brání předčasnému propadání přední paže při nádechu.',
+          technique: 'Jedna paže zůstává natažená vpředu na hladině, dokud druhá nedokončí celý záběr pod vodou a přenos vzduchem a nedotkne se jí.',
+          ytSearch: 'https://www.youtube.com/results?search_query=freestyle+catch+up+drill+swimming',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><path d="M15 54 Q60 48 105 54 T195 54 T225 54" stroke="#3b82f6" stroke-width="2" fill="none"/><circle cx="155" cy="48" r="8" fill="#94a3b8"/><line x1="45" y1="54" x2="145" y2="50" stroke="#3b82f6" stroke-width="8" stroke-linecap="round"/><line x1="164" y1="48" x2="215" y2="48" stroke="#06b6d4" stroke-width="5" stroke-linecap="round"/><path d="M155 42 Q185 20 212 44" stroke="#93c5fd" stroke-width="3" stroke-dasharray="4 3" fill="none"/><text x="35" y="28" fill="#93c5fd" font-size="10" font-weight="700">DLOUHÉ SPLÝVÁNÍ</text></svg>'
+        },
+        {
+          id: 'thoracic-roller',
+          cat: 'swim',
+          catLabel: 'Plavání a mobilita',
+          title: 'Extenze hrudní páteře na pěnovém válci',
+          sets: 'Denně večer 3 minuty + protažení prsních svalů',
+          muscles: 'Mobilita hrudního úseku páteře, Pectoralis minor',
+          benefit: 'Uvolňuje ztuhlou hrudní páteř ze studia a aero pozice na kole, zlepšuje rozsah vzpažení pro plavání a snižuje únavu krku.',
+          technique: 'Lehni si zády na pěnový válec napříč pod lopatkami, ruce za hlavu, pánev na zemi. S výdechem pomalu zakloň hrudník přes válec a 3 s prodýchej.',
+          ytSearch: 'https://www.youtube.com/results?search_query=thoracic+extension+foam+roller',
+          svg: '<svg viewBox="0 0 240 110" width="240" height="110"><rect x="25" y="92" width="190" height="4" rx="2" fill="#334155"/><circle cx="115" cy="80" r="12" fill="#06b6d4"/><path d="M58 86 L85 68 L115 66 Q145 66 162 78" stroke="#a855f7" stroke-width="7" stroke-linecap="round" fill="none"/><circle cx="172" cy="82" r="8" fill="#94a3b8"/><text x="65" y="36" fill="#06b6d4" font-size="10" font-weight="700">MOBILITA HRUDNÍKU</text></svg>'
+        }
+      ];
+
+      // =========================================================================
+      // 5. HELPERS (YOUTUBE EMBED, PACE PARSING, TIME FORMATTING)
+      // =========================================================================
+      function getYoutubeEmbed(url) {
+        if (!url) return null;
+        var m = url.trim().match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/);
+        return m && m[1] ? 'https://www.youtube.com/embed/' + m[1] : null;
+      }
+
+      function parsePaceSec(str, fallback) {
+        if (!str || str.indexOf(':') === -1) return fallback;
+        var parts = str.split(':');
+        var m = parseInt(parts[0], 10);
+        var s = parseInt(parts[1], 10);
+        if (isNaN(m) || isNaN(s)) return fallback;
+        return m * 60 + s;
+      }
+
+      function fmtPace(sec) {
+        var r = Math.max(30, Math.round(sec));
+        var m = Math.floor(r / 60);
+        var s = r % 60;
+        return m + ':' + (s < 10 ? '0' : '') + s;
+      }
+
+      function fmtHMS(sec) {
+        var r = Math.round(sec);
+        var h = Math.floor(r / 3600);
+        var m = Math.floor((r % 3600) / 60);
+        var s = r % 60;
+        if (h > 0) {
+          return h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+        return m + ':' + (s < 10 ? '0' : '') + s;
+      }
+
+      // =========================================================================
+      // 6. RENDERING FUNCTIONS
+      // =========================================================================
+      function renderKPIs() {
+        var raceDate = new Date(2030, 7, 25, 8, 0, 0);
+        var now = new Date();
+        var diffDays = Math.max(0, Math.ceil((raceDate - now) / (1000 * 60 * 60 * 24)));
+        document.getElementById('kpi-countdown').textContent = diffDays.toLocaleString('cs-CZ') + ' dnů';
+
+        var totalCompleted = 0;
+        var totalEvaluated = 0;
+        var totalHours = 0;
+
+        for (var i = 0; i < ALL_WEEKS.length; i++) {
+          var w = ALL_WEEKS[i];
+          for (var j = 0; j < w.days.length; j++) {
+            var d = w.days[j];
+            var key = 'W' + w.weekNum + '_D' + d.dayIdx;
+            var entry = state.dayLogs[key];
+            if (entry && entry.status === 'completed') {
+              totalCompleted++;
+              totalEvaluated++;
+              totalHours += d.hours;
+            } else if (entry && entry.status === 'missed') {
+              totalEvaluated++;
+            }
+          }
+        }
+
+        var rate = totalEvaluated > 0 ? Math.round((totalCompleted / totalEvaluated) * 100) : 0;
+        document.getElementById('kpi-completed').textContent = totalCompleted + ' dnů';
+        document.getElementById('kpi-hours').textContent = totalHours.toFixed(1).replace('.', ',') + ' h';
+        document.getElementById('kpi-rate').textContent = rate + ' %';
+
+        var curWeek = ALL_WEEKS[state.currentWeekIndex];
+        var wDone = 0;
+        for (var k = 0; k < curWeek.days.length; k++) {
+          var kKey = 'W' + curWeek.weekNum + '_D' + curWeek.days[k].dayIdx;
+          if (state.dayLogs[kKey] && state.dayLogs[kKey].status === 'completed') wDone++;
+        }
+        document.getElementById('kpi-week-done').textContent = 'Týden: ' + wDone + '/7';
+
+        var ftp = Number(state.calc.ftp) || 295;
+        var wt = Number(state.calc.weight) || 85;
+        document.getElementById('kpi-ftp').textContent = ftp + ' W';
+        document.getElementById('kpi-wpkg').textContent = (ftp / wt).toFixed(2).replace('.', ',') + ' W/kg';
+        document.getElementById('kpi-weight').textContent = wt.toFixed(1).replace('.', ',') + ' kg';
+      }
+
+      function populateWeekDropdown() {
+        var sel = document.getElementById('select-week');
+        var html = '';
+        for (var i = 0; i < ALL_WEEKS.length; i++) {
+          var w = ALL_WEEKS[i];
+          if (state.yearFilter !== 'all' && String(w.yearNum) !== state.yearFilter) continue;
+          var selected = (i === state.currentWeekIndex) ? ' selected' : '';
+          html += '<option value="' + i + '"' + selected + '>Týden ' + w.weekNum + ' (' + w.dateStr + ') — ' + w.phase + ' [' + w.plannedHours.toFixed(1).replace('.', ',') + ' h]</option>';
+        }
+        sel.innerHTML = html;
+      }
+
+      function renderCalendar() {
+        var w = ALL_WEEKS[state.currentWeekIndex];
+        document.getElementById('btn-prev-week').disabled = state.currentWeekIndex <= 0;
+        document.getElementById('btn-next-week').disabled = state.currentWeekIndex >= ALL_WEEKS.length - 1;
+
+        document.getElementById('wb-num').textContent = 'TÝDEN ' + w.weekNum + ' / 197';
+        document.getElementById('wb-year').textContent = w.yearLabel;
+        var phaseEl = document.getElementById('wb-phase');
+        phaseEl.textContent = w.phase;
+        phaseEl.className = 'badge ' + w.badgeType;
+
+        document.getElementById('wb-title').textContent = w.dateStr;
+        document.getElementById('wb-desc').textContent = w.desc;
+        document.getElementById('wb-hours').textContent = w.plannedHours.toFixed(1).replace('.', ',') + ' h';
+        document.getElementById('wb-targets').textContent = w.targets;
+
+        var grid = document.getElementById('days-grid');
+        var cardsHtml = '';
+
+        for (var i = 0; i < w.days.length; i++) {
+          var d = w.days[i];
+          var key = 'W' + w.weekNum + '_D' + d.dayIdx;
+          var log = state.dayLogs[key] || { status: 'planned', note: '' };
+
+          var statusClass = log.status === 'completed' ? ' status-completed' : (log.status === 'missed' ? ' status-missed' : '');
+          var discClass = 'disc-' + d.disc;
+
+          cardsHtml +=
+            '<article class="day-card' + statusClass + '">' +
+              '<div>' +
+                '<div class="day-header">' +
+                  '<div class="day-date"><strong>' + d.name + '</strong> ' + fmtDateShort(d.date) + '</div>' +
+                  '<span class="disc-tag ' + discClass + '">' + d.discLabel + '</span>' +
+                '</div>' +
+                '<h3 class="day-title">' + d.title + '</h3>' +
+                '<div class="day-metric">' + d.metric + '</div>' +
+                '<p class="day-details">' + d.details + '</p>' +
+              '</div>' +
+              '<div class="day-footer">' +
+                '<div class="status-btns">' +
+                  '<button type="button" class="st-btn' + (log.status === 'planned' ? ' active-planned' : '') + '" data-act="status" data-key="' + key + '" data-val="planned">Plán</button>' +
+                  '<button type="button" class="st-btn' + (log.status === 'completed' ? ' active-completed' : '') + '" data-act="status" data-key="' + key + '" data-val="completed">Splněno ✓</button>' +
+                  '<button type="button" class="st-btn' + (log.status === 'missed' ? ' active-missed' : '') + '" data-act="status" data-key="' + key + '" data-val="missed">Nesplněno ✕</button>' +
+                '</div>' +
+                '<div class="note-row">' +
+                  '<input type="text" class="note-input" id="note-' + key + '" value="' + escapeHtml(log.note || '') + '" placeholder="Poznámka (watty, tep, váha)..." />' +
+                  '<button type="button" class="btn" style="padding:6px 10px;" data-act="save-note" data-key="' + key + '">Uložit</button>' +
+                '</div>' +
+              '</div>' +
+            '</article>';
+        }
+        grid.innerHTML = cardsHtml;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderExercises() {
+        var grid = document.getElementById('exercises-grid');
+        var html = '';
+
+        for (var i = 0; i < EXERCISES.length; i++) {
+          var ex = EXERCISES[i];
+          if (state.exCategory !== 'all' && ex.cat !== state.exCategory) continue;
+
+          var savedYt = state.exerciseVideos[ex.id] || '';
+          var embedUrl = getYoutubeEmbed(savedYt);
+          var uploaded = state.uploadedMedia[ex.id] || null;
+
+          var mediaHtml = '';
+          if (embedUrl) {
+            mediaHtml += '<div class="media-preview"><iframe src="' + embedUrl + '" title="' + escapeHtml(ex.title) + '" allowfullscreen></iframe></div>';
+          } else if (savedYt) {
+            mediaHtml += '<a href="' + escapeHtml(savedYt) + '" target="_blank" rel="noopener noreferrer" class="btn btn-cyan" style="width:100%;">Otevřít uložený odkaz na video ↗</a>';
+          }
+
+          if (uploaded) {
+            if (uploaded.type && uploaded.type.indexOf('video/') === 0) {
+              mediaHtml += '<div class="media-preview"><video src="' + uploaded.url + '" controls></video></div>';
+            } else {
+              mediaHtml += '<div class="media-preview"><img src="' + uploaded.url + '" alt="' + escapeHtml(ex.title) + '" /></div>';
+            }
+          }
+
+          html +=
+            '<article class="ex-card">' +
+              '<div>' +
+                '<div class="ex-top-meta">' +
+                  '<span class="badge badge-cyan">' + ex.catLabel + '</span>' +
+                  '<span style="font-size:12px;font-weight:700;color:#6ee7b7;">' + ex.sets + '</span>' +
+                '</div>' +
+                '<h3 class="ex-title">' + ex.title + '</h3>' +
+                '<div class="svg-stage">' + ex.svg + '</div>' +
+                '<div class="ex-info">' +
+                  '<p><strong>Zapojené svaly:</strong> ' + ex.muscles + '</p>' +
+                  '<p><strong>Přínos pro výkon:</strong> ' + ex.benefit + '</p>' +
+                  '<p><strong>Technika provedení:</strong> ' + ex.technique + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="ex-media-box">' +
+                mediaHtml +
+                '<div class="media-btns">' +
+                  '<a href="' + ex.ytSearch + '" target="_blank" rel="noopener noreferrer" class="btn" style="border-color:rgba(239,68,68,0.5);color:#fca5a5;">▶ Hledat video na YouTube</a>' +
+                  '<label class="btn" style="cursor:pointer;">📁 Nahrát vlastní video / fotku<input type="file" accept="video/*,image/*" data-act="upload-media" data-id="' + ex.id + '" style="display:none;" /></label>' +
+                '</div>' +
+                '<div class="yt-input-row">' +
+                  '<input type="url" class="note-input" id="yt-' + ex.id + '" value="' + escapeHtml(savedYt) + '" placeholder="Vložit vlastní odkaz na YouTube video..." />' +
+                  '<button type="button" class="btn btn-cyan" data-act="save-yt" data-id="' + ex.id + '">Připnout</button>' +
+                '</div>' +
+              '</div>' +
+            '</article>';
+        }
+        grid.innerHTML = html;
+      }
+
+      function renderZonesAndSimulator() {
+        var ftp = Math.max(120, Number(state.calc.ftp) || 295);
+        var wt = Math.max(45, Number(state.calc.weight) || 85);
+        var cssSec = parsePaceSec(state.calc.css, 110);
+        var runSec = parsePaceSec(state.calc.run, 265);
+
+        document.getElementById('out-wpkg').textContent = 'Poměr výkon/váha: ' + (ftp / wt).toFixed(2).replace('.', ',') + ' W/kg';
+
+        // 1. Cycling Power Zones Z1-Z7
+        var bikeZones = [
+          { name: 'Z1 • Aktivní regenerace', min: 0.0, max: 0.55 },
+          { name: 'Z2 • Aerobní vytrvalost (80 % objemu)', min: 0.56, max: 0.75 },
+          { name: 'Z3 • Tempo / Sweet-Spot (88–93 %)', min: 0.76, max: 0.93 },
+          { name: 'Z4 • Laktátový práh (FTP)', min: 0.94, max: 1.05 },
+          { name: 'Z5 • VO₂max (4–8 min intervaly)', min: 1.06, max: 1.20 },
+          { name: 'Z6 • Anaerobní kapacita', min: 1.21, max: 1.50 },
+          { name: 'Z7 • Neuromuskulární sprint', min: 1.51, max: 2.20 }
+        ];
+
+        var bHtml = '';
+        for (var i = 0; i < bikeZones.length; i++) {
+          var z = bikeZones[i];
+          var w1 = Math.round(ftp * z.min);
+          var w2 = Math.round(ftp * z.max);
+          var wStr = i === 0 ? '< ' + w2 + ' W' : (i === 6 ? '> ' + w1 + ' W' : w1 + ' – ' + w2 + ' W');
+          var wpkg = (w1 / wt).toFixed(1) + '–' + (w2 / wt).toFixed(1);
+          var hl = (i === 1 || i === 2) ? ' class="highlight-row"' : '';
+          bHtml += '<tr' + hl + '><td>' + z.name + '</td><td>' + Math.round(z.min * 100) + '–' + Math.round(z.max * 100) + ' %</td><td style="color:#fcd34d;font-weight:800;">' + wStr + '</td><td>' + wpkg + '</td></tr>';
+        }
+        document.getElementById('tbody-bike-zones').innerHTML = bHtml;
+
+        // 2. Running Zones
+        var runZones = [
+          { name: 'Z1 • Regenerační klus', p1: runSec + 60, p2: runSec + 85, hr: '< 138 bpm' },
+          { name: 'Z2 • Dlouhý aerobní běh', p1: runSec + 35, p2: runSec + 55, hr: '139–152 bpm' },
+          { name: 'Z3 • Závodní tempo 70.3', p1: runSec + 10, p2: runSec + 20, hr: '153–164 bpm' },
+          { name: 'Z4 • Laktátový práh', p1: runSec - 3, p2: runSec + 4, hr: '165–174 bpm' },
+          { name: 'Z5 • VO₂max (1 km úseky)', p1: runSec - 18, p2: runSec - 8, hr: '175+ bpm' }
+        ];
+        var rHtml = '';
+        for (var j = 0; j < runZones.length; j++) {
+          var rz = runZones[j];
+          rHtml += '<tr><td>' + rz.name + '</td><td style="color:#6ee7b7;font-weight:800;">' + fmtPace(rz.p1) + ' – ' + fmtPace(rz.p2) + ' /km</td><td>' + rz.hr + '</td></tr>';
+        }
+        document.getElementById('tbody-run-zones').innerHTML = rHtml;
+
+        // 3. Swim Zones
+        var swimZones = [
+          { name: 'Vytrvalostní tempo (CSS + 6 s)', p: cssSec + 6 },
+          { name: 'Závodní tempo 70.3 (CSS + 2 s)', p: cssSec + 2 },
+          { name: 'Kritická rychlost (CSS)', p: cssSec },
+          { name: 'Rychlé stovky (CSS − 4 s)', p: cssSec - 4 }
+        ];
+        var sHtml = '';
+        for (var k = 0; k < swimZones.length; k++) {
+          var sz = swimZones[k];
+          sHtml += '<tr><td>' + sz.name + '</td><td style="color:#93c5fd;font-weight:800;">' + fmtPace(sz.p) + ' /100m</td><td>' + fmtHMS(sz.p * 19) + '</td></tr>';
+        }
+        document.getElementById('tbody-swim-zones').innerHTML = sHtml;
+
+        // 4. 70.3 Race Time Simulator (1.9 km swim + T1 + 90 km aero bike + T2 + 21.1 km run)
+        var swimRaceSec = (cssSec + 1) * 19; // Slight wetsuit/drafting bonus vs pool CSS+2
+        var t1Sec = 135; // 2:15
+        var raceBikeW = ftp * 0.83; // ~83% FTP for 70.3
+        // Physics-based speed approximation on flat TT setup (CdA ~0.235, Crr 0.004)
+        var speedKmh = Math.pow(raceBikeW / 0.00385, 1 / 3);
+        speedKmh = Math.min(44.5, Math.max(30.0, speedKmh));
+        var bikeRaceSec = (90 / speedKmh) * 3600;
+        var t2Sec = 100; // 1:40
+        var runRacePaceSec = runSec + 15; // Half marathon off the bike ~ threshold + 15s/km
+        var runRaceSec = runRacePaceSec * 21.0975;
+
+        var totalSec = Math.round(swimRaceSec + t1Sec + bikeRaceSec + t2Sec + runRaceSec);
+        document.getElementById('sim-splits').innerHTML =
+          '<span>Plavání 1,9 km: <strong>' + fmtHMS(swimRaceSec) + '</strong></span>' +
+          '<span>Depa T1+T2: <strong>3:55</strong></span>' +
+          '<span>Kolo 90 km (' + speedKmh.toFixed(1).replace('.', ',') + ' km/h @ ' + Math.round(raceBikeW) + ' W): <strong>' + fmtHMS(bikeRaceSec) + '</strong></span>' +
+          '<span>Běh 21,1 km (' + fmtPace(runRacePaceSec) + '/km): <strong>' + fmtHMS(runRaceSec) + '</strong></span>';
+
+        document.getElementById('sim-total-time').textContent = fmtHMS(totalSec);
+        var diff = totalSec - 14400; // 4:00:00 = 14400s
+        var diffEl = document.getElementById('sim-sub4-diff');
+        if (diff < 0) {
+          diffEl.style.color = '#10b981';
+          diffEl.textContent = 'SPLNĚNO SUB-4! (' + fmtHMS(Math.abs(diff)) + ' pod hranicí 4:00:00)';
+        } else {
+          diffEl.style.color = '#f59e0b';
+          diffEl.textContent = '+' + fmtHMS(diff) + ' nad hranicí 4:00:00';
+        }
+      }
+
+      function renderAll() {
+        populateWeekDropdown();
+        renderCalendar();
+        renderExercises();
+        renderZonesAndSimulator();
+        renderKPIs();
+      }
+
+      // =========================================================================
+      // 7. EVENT LISTENERS
+      // =========================================================================
+      function initEvents() {
+        // Main Tabs
+        var tabBtns = document.querySelectorAll('.tab-btn');
+        for (var i = 0; i < tabBtns.length; i++) {
+          tabBtns[i].addEventListener('click', function () {
+            var target = this.getAttribute('data-tab');
+            for (var j = 0; j < tabBtns.length; j++) tabBtns[j].classList.remove('active');
+            this.classList.add('active');
+
+            var panels = document.querySelectorAll('.tab-panel');
+            for (var k = 0; k < panels.length; k++) panels[k].classList.remove('active');
+            document.getElementById('panel-' + target).classList.add('active');
+          });
+        }
+
+        // Year Filters
+        document.getElementById('year-filters').addEventListener('click', function (e) {
+          var btn = e.target.closest('.filter-pill');
+          if (!btn) return;
+          state.yearFilter = btn.getAttribute('data-year');
+          var pills = document.querySelectorAll('#year-filters .filter-pill');
+          for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+          btn.classList.add('active');
+
+          for (var j = 0; j < ALL_WEEKS.length; j++) {
+            if (state.yearFilter === 'all' || String(ALL_WEEKS[j].yearNum) === state.yearFilter) {
+              state.currentWeekIndex = j;
+              break;
+            }
+          }
+          saveState();
+          renderAll();
+        });
+
+        // Week Navigation
+        document.getElementById('btn-prev-week').addEventListener('click', function () {
+          if (state.currentWeekIndex > 0) {
+            state.currentWeekIndex--;
+            saveState();
+            renderAll();
+          }
+        });
+
+        document.getElementById('btn-next-week').addEventListener('click', function () {
+          if (state.currentWeekIndex < ALL_WEEKS.length - 1) {
+            state.currentWeekIndex++;
+            saveState();
+            renderAll();
+          }
+        });
+
+        document.getElementById('select-week').addEventListener('change', function () {
+          state.currentWeekIndex = parseInt(this.value, 10) || 0;
+          saveState();
+          renderCalendar();
+          renderKPIs();
+        });
+
+        document.getElementById('btn-jump-t1').addEventListener('click', function () {
+          state.yearFilter = 'all';
+          resetYearPills();
+          state.currentWeekIndex = 0;
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('btn-jump-race').addEventListener('click', function () {
+          state.yearFilter = 'all';
+          resetYearPills();
+          state.currentWeekIndex = 195; // T196
+          saveState();
+          renderAll();
+        });
+
+        document.getElementById('btn-jump-today').addEventListener('click', function () {
+          state.yearFilter = 'all';
+          resetYearPills();
+          jumpToToday();
+          saveState();
+          renderAll();
+          showToast('Zobrazen aktuální týden');
+        });
+
+        function resetYearPills() {
+          var pills = document.querySelectorAll('#year-filters .filter-pill');
+          for (var i = 0; i < pills.length; i++) {
+            pills[i].classList.toggle('active', pills[i].getAttribute('data-year') === 'all');
+          }
+        }
+
+        // Complete entire week
+        document.getElementById('btn-check-all-week').addEventListener('click', function () {
+          var w = ALL_WEEKS[state.currentWeekIndex];
+          for (var i = 0; i < w.days.length; i++) {
+            var key = 'W' + w.weekNum + '_D' + w.days[i].dayIdx;
+            var prevNote = state.dayLogs[key] ? state.dayLogs[key].note : '';
+            state.dayLogs[key] = { status: 'completed', note: prevNote };
+          }
+          saveState();
+          renderCalendar();
+          renderKPIs();
+          showToast('Týden ' + w.weekNum + ' kompletně odškrtnut ✓', 'success');
+        });
+
+        // Day Cards Delegated Clicks
+        document.getElementById('days-grid').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-act]');
+          if (!btn) return;
+          var act = btn.getAttribute('data-act');
+          var key = btn.getAttribute('data-key');
+
+          if (act === 'status') {
+            var val = btn.getAttribute('data-val');
+            var noteInput = document.getElementById('note-' + key);
+            var noteVal = noteInput ? noteInput.value : (state.dayLogs[key] ? state.dayLogs[key].note : '');
+            state.dayLogs[key] = { status: val, note: noteVal };
+            saveState();
+            renderCalendar();
+            renderKPIs();
+            if (val === 'completed') showToast('Trénink splněn ✓', 'success');
+            else if (val === 'missed') showToast('Trénink označen jako nesplněný ✕', 'error');
+          } else if (act === 'save-note') {
+            var inp = document.getElementById('note-' + key);
+            var txt = inp ? inp.value.trim() : '';
+            var curSt = state.dayLogs[key] ? state.dayLogs[key].status : 'planned';
+            state.dayLogs[key] = { status: curSt, note: txt };
+            saveState();
+            showToast('Poznámka uložena ✓', 'success');
+          }
+        });
+
+        // Exercise Category Filter
+        document.getElementById('ex-cat-filters').addEventListener('click', function (e) {
+          var btn = e.target.closest('.filter-pill');
+          if (!btn) return;
+          state.exCategory = btn.getAttribute('data-cat');
+          var pills = document.querySelectorAll('#ex-cat-filters .filter-pill');
+          for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+          btn.classList.add('active');
+          renderExercises();
+        });
+
+        // Exercise YouTube & Media Upload
+        document.getElementById('exercises-grid').addEventListener('click', function (e) {
+          var btn = e.target.closest('button[data-act="save-yt"]');
+          if (!btn) return;
+          var id = btn.getAttribute('data-id');
+          var inp = document.getElementById('yt-' + id);
+          var url = inp ? inp.value.trim() : '';
+          state.exerciseVideos[id] = url;
+          saveState();
+          renderExercises();
+          showToast(url ? 'Video odkaz připnut ke cviku ✓' : 'Odkaz odebrán', 'success');
+        });
+
+        document.getElementById('exercises-grid').addEventListener('change', function (e) {
+          var inp = e.target.closest('input[data-act="upload-media"]');
+          if (!inp || !inp.files || !inp.files[0]) return;
+          var id = inp.getAttribute('data-id');
+          var file = inp.files[0];
+          state.uploadedMedia[id] = {
+            url: URL.createObjectURL(file),
+            type: file.type,
+            name: file.name
+          };
+          renderExercises();
+          showToast('Soubor „' + file.name + '“ načten ✓', 'success');
+        });
+
+        // Calculator Inputs
+        ['in-ftp', 'in-weight', 'in-css', 'in-run'].forEach(function (id) {
+          document.getElementById(id).addEventListener('input', function () {
+            state.calc.ftp = Number(document.getElementById('in-ftp').value) || 295;
+            state.calc.weight = Number(document.getElementById('in-weight').value) || 85;
+            state.calc.css = document.getElementById('in-css').value;
+            state.calc.run = document.getElementById('in-run').value;
+            saveState();
+            renderZonesAndSimulator();
+            renderKPIs();
+          });
+        });
+
+        var presetBtns = document.querySelectorAll('.zone-preset');
+        for (var p = 0; p < presetBtns.length; p++) {
+          presetBtns[p].addEventListener('click', function () {
+            state.calc.ftp = Number(this.getAttribute('data-ftp'));
+            state.calc.weight = Number(this.getAttribute('data-wt'));
+            state.calc.css = this.getAttribute('data-css');
+            state.calc.run = this.getAttribute('data-run');
+            syncCalcInputs();
+            saveState();
+            renderZonesAndSimulator();
+            renderKPIs();
+            showToast('Profil zón načten ✓', 'success');
+          });
+        }
+
+        // JSON Export / Import
+        document.getElementById('btn-export-json').addEventListener('click', function () {
+          var exportObj = {
+            app: 'IRONMAN 70.3 SUB-4 TRENER',
+            exportedAt: new Date().toISOString(),
+            currentWeekIndex: state.currentWeekIndex,
+            dayLogs: state.dayLogs,
+            exerciseVideos: state.exerciseVideos,
+            calc: state.calc
+          };
+          var blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'ironman_703_sub4_zaloha.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          showToast('Záloha stažena (.json) ✓', 'success');
+        });
+
+        document.getElementById('input-import-json').addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            try {
+              var parsed = JSON.parse(ev.target.result);
+              if (parsed.dayLogs) state.dayLogs = parsed.dayLogs;
+              if (parsed.exerciseVideos) state.exerciseVideos = parsed.exerciseVideos;
+              if (typeof parsed.currentWeekIndex === 'number') state.currentWeekIndex = parsed.currentWeekIndex;
+              if (parsed.calc) {
+                state.calc = Object.assign(state.calc, parsed.calc);
+                syncCalcInputs();
+              }
+              saveState();
+              renderAll();
+              showToast('Záloha úspěšně obnovena ✓', 'success');
+            } catch (err) {
+              showToast('Chyba při čtení JSON souboru', 'error');
+            }
+          };
+          reader.readAsText(file);
+          e.target.value = '';
+        });
+      }
+
+      function syncCalcInputs() {
+        document.getElementById('in-ftp').value = state.calc.ftp;
+        document.getElementById('in-weight').value = state.calc.weight;
+        document.getElementById('in-css').value = state.calc.css;
+        document.getElementById('in-run').value = state.calc.run;
+      }
+
+      function jumpToToday() {
+        var now = new Date();
+        for (var i = 0; i < ALL_WEEKS.length; i++) {
+          if (now >= ALL_WEEKS[i].startDate && now <= addDays(ALL_WEEKS[i].endDate, 1)) {
+            state.currentWeekIndex = i;
+            return;
+          }
+        }
+        state.currentWeekIndex = 0;
+      }
+
+      // =========================================================================
+      // 8. BOOTSTRAP ON DOMCONTENTLOADED
+      // =========================================================================
+      document.addEventListener('DOMContentLoaded', function () {
+        loadState();
+        syncCalcInputs();
+        if (!safeGetItem(STORAGE_KEY)) {
+          jumpToToday();
+        }
+        initEvents();
+        renderAll();
+      });
+    })();
+  </script>
+</body>
+</html>
